@@ -1,0 +1,14 @@
+{
+    "name": "vtk13/lib-xdebug-trace",
+    "version": "0.1",
+    "autoload": {
+        "psr-4": {
+            "Vtk13\\LibXdebugTrace\\": "src/"
+        }
+    },
+    "require": {
+    },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    }
+}
