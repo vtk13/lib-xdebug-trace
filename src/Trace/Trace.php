@@ -2,7 +2,8 @@
 namespace Vtk13\LibXdebugTrace\Trace;
 
 use Exception;
-use Vtk13\LibXdebugTrace\File;
+use Vtk13\LibXdebugTrace\FileUtil\Directory;
+use Vtk13\LibXdebugTrace\FileUtil\File;
 
 class Trace
 {
@@ -30,39 +31,39 @@ class Trace
         }
     }
 
-    public function files($prefix = '')
+    /**
+     * @return File[]
+     */
+    public function files()
     {
         $res = array();
-        $this->traverse(function(Node $node) use (&$res, $prefix) {
-            $res[str_replace($prefix, '', $node->file)] = 1;
+        $this->traverse(function(Node $node) use (&$res) {
+            $res[$node->file] = new File($node->file);
         });
 
-        $res = array_keys($res);
-        sort($res);
+        ksort($res);
         return $res;
     }
 
     public function fileHierarchy()
     {
-        $res = array(
-            'name'      => 'root',
-            'file'      => 'root',
-            'children'  => array(),
-        );
+        $root = new Directory('/');
         foreach ($this->files() as $file) {
-            $current = &$res['children'];
-            foreach (explode('/', trim($file, '/')) as $chunk) {
-                if (empty($current[$chunk])) {
-                    $current[$chunk] = array(
-                        'name'      => $chunk,
-                        'file'      => $file,
-                        'children'  => array(),
-                    );
+            $current = &$root;
+            $chunks = explode('/', trim($file->getFullName(), '/'));
+            $last = count($chunks) - 1;
+            foreach ($chunks as $i => $chunk) {
+                if (isset($current->subItems[$chunk])) {
+                    $current = &$current->subItems[$chunk];
+                } elseif ($i == $last) {
+                    $current->subItems[$chunk] = $file;
+                } else {
+                    $current->subItems[$chunk] = new Directory($chunk);
+                    $current = &$current->subItems[$chunk];
                 }
-                $current = &$current[$chunk]['children'];
             }
         }
-        return $res;
+        return $root;
     }
 
     /**

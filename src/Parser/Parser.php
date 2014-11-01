@@ -2,7 +2,7 @@
 namespace Vtk13\LibXdebugTrace\Parser;
 
 use Exception;
-use Vtk13\LibXdebugTrace\File;
+use Vtk13\LibXdebugTrace\FileUtil\File;
 use Vtk13\LibXdebugTrace\Logger;
 use Vtk13\LibXdebugTrace\Trace\Node;
 use Vtk13\LibXdebugTrace\Trace\Trace;

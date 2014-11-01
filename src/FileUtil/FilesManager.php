@@ -1,5 +1,5 @@
 <?php
-namespace Vtk13\LibXdebugTrace;
+namespace Vtk13\LibXdebugTrace\FileUtil;
 
 class FilesManager
 {

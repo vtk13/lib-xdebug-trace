@@ -1,8 +1,9 @@
 <?php
-namespace Vtk13\LibXdebugTrace;
+namespace Vtk13\LibXdebugTrace\FileUtil;
 
 class File
 {
+    public $id;
     protected $name;
 
     public function __construct($name)
