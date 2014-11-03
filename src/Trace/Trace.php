@@ -15,6 +15,15 @@ class Trace
     public function __construct(Node $root)
     {
         $this->root = $root;
+        $this->fixParents($this->root);
+    }
+
+    protected function fixParents(Node $node)
+    {
+        foreach ($node->children as $child) {
+            $child->parent = $node;
+            $this->fixParents($child);
+        }
     }
 
     public function traverse($callback, Node $node = null)
@@ -51,16 +60,17 @@ class Trace
         foreach ($this->files() as $file) {
             $current = &$root;
             $chunks = explode('/', trim($file->getFullName(), '/'));
+            $leftPath = '';
             $last = count($chunks) - 1;
             foreach ($chunks as $i => $chunk) {
+                $leftPath .= '/' . $chunk;
                 if (isset($current->subItems[$chunk])) {
-                    $current = &$current->subItems[$chunk];
                 } elseif ($i == $last) {
                     $current->subItems[$chunk] = $file;
                 } else {
-                    $current->subItems[$chunk] = new Directory($chunk);
-                    $current = &$current->subItems[$chunk];
+                    $current->subItems[$chunk] = new Directory($leftPath);
                 }
+                $current = &$current->subItems[$chunk];
             }
         }
         return $root;
@@ -88,5 +98,41 @@ class Trace
 
         ksort($res);
         return $res;
+    }
+
+    public function stackTraces(Line $line)
+    {
+        /* @var $res StackTrace[] */
+        $res = array();
+        $this->traverse(function(Node $node) use ($line, &$res) {
+            if ($node->file == $line->file && $node->line == $line->line) {
+                $stackTrace = new StackTrace($node);
+                if (isset($res[$stackTrace->getId()])) {
+                    $res[$stackTrace->getId()]->hit();
+                } else {
+                    $res[$stackTrace->getId()] = $stackTrace;
+                }
+            }
+        });
+        return $res;
+    }
+
+    public function callTree(Line $line)
+    {
+        return array_reduce($this->stackTraces($line), function(&$acc, StackTrace $trace) {
+            $current = &$acc;
+            foreach ($trace->getStraightTrace() as $node) {
+                if (!isset($current[$node->getId()])) {
+                    $current[$node->getId()] = array(
+                        'file'      => $node->file,
+                        'line'      => $node->line,
+                        'function'  => $node->parent ? $node->parent->function : '{main}',
+                        'children'  => array(),
+                    );
+                }
+                $current = &$current[$node->getId()]['children'];
+            }
+            return $acc;
+        }, array());
     }
 }

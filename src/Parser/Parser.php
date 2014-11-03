@@ -26,18 +26,18 @@ class Parser
         $this->log = new Logger();
     }
 
-    public function parse(File $file)
+    public function parse(File $traceFile)
     {
         $this->current = $root = new Entry(0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-        $file = fopen($file->getFullName(), 'r');
-        fgetcsv($file, null, "\t"); // $version
-        $format = fgetcsv($file, null, "\t");
-        fgetcsv($file, null, "\t"); // $traceStart
+        $traceFile = fopen($traceFile->getFullName(), 'r');
+        fgetcsv($traceFile, null, "\t"); // $version
+        $format = fgetcsv($traceFile, null, "\t");
+        fgetcsv($traceFile, null, "\t"); // $traceStart
         if ($format[0] != 'File format: ' . XDEBUG_TRACE_COMPUTERIZED) {
             throw new Exception('Invalid trace format #' . $format[0]);
         }
-        while (($data = fgetcsv($file, null, "\t")) !== false) {
+        while (($data = fgetcsv($traceFile, null, "\t")) !== false) {
             if (isset($data[2])) {
                 switch ($data[2]) {
                     case '0':
@@ -53,7 +53,7 @@ class Parser
         while ($this->current != $root) {
             $this->goOut(new ExitEntry($this->current->level, $this->current->callId, 0, 0));
         }
-        fclose($file);
+        fclose($traceFile);
 
         return new Trace($this->createNodeFromEntry($root));
     }

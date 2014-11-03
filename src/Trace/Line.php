@@ -11,4 +11,9 @@ class Line
         $this->file = $file;
         $this->line = $line;
     }
+
+    public function getId()
+    {
+        return $this->file . ':' . $this->line;
+    }
 }

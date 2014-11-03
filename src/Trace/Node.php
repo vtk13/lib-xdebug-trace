@@ -44,4 +44,15 @@ class Node
         $this->line = $line;
         $this->parameters = $parameters;
     }
+
+    public function getLine()
+    {
+        return new Line($this->file, $this->line);
+    }
+
+    public function getId()
+    {
+        // TODO not an unique in trace actually
+        return $this->level . ':' . $this->file . ':' . $this->line;
+    }
 }

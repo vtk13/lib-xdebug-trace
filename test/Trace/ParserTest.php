@@ -1,6 +1,7 @@
 <?php
 use Vtk13\LibXdebugTrace\FileUtil\File;
 use Vtk13\LibXdebugTrace\Parser\Parser;
+use Vtk13\LibXdebugTrace\Trace\Line;
 use Vtk13\LibXdebugTrace\Trace\Trace;
 
 class ParserTestClass extends PHPUnit_Framework_TestCase
@@ -51,5 +52,28 @@ class ParserTestClass extends PHPUnit_Framework_TestCase
                 ->subItems['administrator']
                 ->subItems['index.php']->getFullName()
         );
+    }
+
+    public function testStackTrace()
+    {
+        $line = new Line('/home/vtk/ws-joomla/joomla.vtk/libraries/joomla/database/query.php', 66);
+        $traces = self::$trace->stackTraces($line);
+        $this->assertEquals(71, count($traces));
+        $this->assertEquals(2, $traces['a66592a5bc3bfa51d59e16e38b52ed61']->getHits());
+    }
+
+    public function testStraightTrace()
+    {
+        $line = new Line('/home/vtk/ws-joomla/joomla.vtk/libraries/joomla/database/query.php', 66);
+        $traces = self::$trace->stackTraces($line);
+        $straight = $traces['a66592a5bc3bfa51d59e16e38b52ed61']->getStraightTrace();
+        $this->assertEquals(15, count($straight));
+    }
+
+    public function testLineInfo()
+    {
+        $line = new Line('/home/vtk/ws-joomla/joomla.vtk/libraries/joomla/database/query.php', 66);
+        $tree = self::$trace->callTree($line);
+        // TODO
     }
 }
