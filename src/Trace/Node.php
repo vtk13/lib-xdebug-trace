@@ -52,7 +52,7 @@ class Node
 
     public function getId()
     {
-        // TODO not an unique in trace actually
-        return $this->level . ':' . $this->file . ':' . $this->line;
+        return md5($this->callId . ':' . $this->file . ':' . $this->line);
+//        return $this->level . ':' . $this->file . ':' . $this->line;
     }
 }

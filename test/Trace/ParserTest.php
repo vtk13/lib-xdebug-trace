@@ -58,16 +58,15 @@ class ParserTestClass extends PHPUnit_Framework_TestCase
     {
         $line = new Line('/home/vtk/ws-joomla/joomla.vtk/libraries/joomla/database/query.php', 66);
         $traces = self::$trace->stackTraces($line);
-        $this->assertEquals(71, count($traces));
-        $this->assertEquals(2, $traces['a66592a5bc3bfa51d59e16e38b52ed61']->getHits());
+        $this->assertEquals(89, count($traces));
     }
 
     public function testStraightTrace()
     {
         $line = new Line('/home/vtk/ws-joomla/joomla.vtk/libraries/joomla/database/query.php', 66);
         $traces = self::$trace->stackTraces($line);
-        $straight = $traces['a66592a5bc3bfa51d59e16e38b52ed61']->getStraightTrace();
-        $this->assertEquals(15, count($straight));
+        $straight = $traces['3cc23b5baf002788524eaa9ca1e8d9a4']->getStraightTrace();
+        $this->assertEquals(11, count($straight));
     }
 
     public function testLineInfo()

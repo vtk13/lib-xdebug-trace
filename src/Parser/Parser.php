@@ -21,41 +21,52 @@ class Parser
 
     protected $log;
 
+    static $cache;
+
     public function __construct()
     {
         $this->log = new Logger();
     }
 
+    /**
+     * @param File $traceFile
+     * @return Trace
+     * @throws \Exception
+     */
     public function parse(File $traceFile)
     {
-        $this->current = $root = new Entry(0, 0, 0, 0, 0, 0, 0, 0, 0);
+        if (empty(self::$cache[$traceFile->getFullName()])) {
+            $this->current = $root = new Entry(0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-        $traceFile = fopen($traceFile->getFullName(), 'r');
-        fgetcsv($traceFile, null, "\t"); // $version
-        $format = fgetcsv($traceFile, null, "\t");
-        fgetcsv($traceFile, null, "\t"); // $traceStart
-        if ($format[0] != 'File format: ' . XDEBUG_TRACE_COMPUTERIZED) {
-            throw new Exception('Invalid trace format #' . $format[0]);
-        }
-        while (($data = fgetcsv($traceFile, null, "\t")) !== false) {
-            if (isset($data[2])) {
-                switch ($data[2]) {
-                    case '0':
-                        $this->processEntry(new Entry($data[0], $data[1], $data[3], $data[4], $data[5], $data[6], $data[7], $data[8], $data[9]));
-                        break;
-                    case '1':
-                        $this->processEntry(new ExitEntry($data[0], $data[1], $data[3], $data[4]));
-                        break;
+            $file = fopen($traceFile->getFullName(), 'r');
+            fgetcsv($file, null, "\t"); // $version
+            $format = fgetcsv($file, null, "\t");
+            fgetcsv($file, null, "\t"); // $traceStart
+            if ($format[0] != 'File format: ' . XDEBUG_TRACE_COMPUTERIZED) {
+                throw new Exception('Invalid trace format #' . $format[0]);
+            }
+            while (($data = fgetcsv($file, null, "\t")) !== false) {
+                if (isset($data[2])) {
+                    switch ($data[2]) {
+                        case '0':
+                            $this->processEntry(new Entry($data[0], $data[1], $data[3], $data[4], $data[5], $data[6], $data[7], $data[8], $data[9], array_slice($data, 11)));
+                            break;
+                        case '1':
+                            $this->processEntry(new ExitEntry($data[0], $data[1], $data[3], $data[4]));
+                            break;
+                    }
                 }
             }
+
+            while ($this->current != $root) {
+                $this->goOut(new ExitEntry($this->current->level, $this->current->callId, 0, 0));
+            }
+            fclose($file);
+
+            self::$cache[$traceFile->getFullName()] = new Trace($this->createNodeFromEntry($root));
         }
 
-        while ($this->current != $root) {
-            $this->goOut(new ExitEntry($this->current->level, $this->current->callId, 0, 0));
-        }
-        fclose($traceFile);
-
-        return new Trace($this->createNodeFromEntry($root));
+        return self::$cache[$traceFile->getFullName()];
     }
 
     protected function createNodeFromEntry(Entry $entry, ExitEntry $exitEntry = null)

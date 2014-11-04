@@ -3,7 +3,7 @@ namespace Vtk13\LibXdebugTrace\FileUtil;
 
 class FilesManager
 {
-    protected $directory;
+    public $directory;
 
     public function __construct($directory = null)
     {
@@ -16,11 +16,21 @@ class FilesManager
 
     public function getTraceFile($baseName)
     {
-        $name = realpath($this->directory . '/' . $baseName);
-        if (substr($name, 0, strlen($this->directory)) != $this->directory) {
-            throw new \Exception('Invalid trace basename. "../" in name?');
+        $fullName = $this->directory . '/' . $baseName;
+        if (is_file($fullName)) {
+            if (is_readable($fullName)) {
+                $fullName = realpath($fullName);
+                if (substr($fullName, 0, strlen($this->directory)) != $this->directory) {
+                    throw new \Exception('Invalid trace basename. "../" in name?');
+                } else {
+                    return new File($fullName);
+                }
+            } else {
+                throw new \Exception("Trace file {$baseName} is not readable");
+            }
+        } else {
+            return null;
         }
-        return new File($name);
     }
 
     /**
