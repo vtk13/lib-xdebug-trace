@@ -47,6 +47,10 @@ class Entry
         $this->includeFile = $includeFile;
         $this->file = $file;
         $this->line = $line;
-        $this->parameters = $parameters;
+        if (empty($parameters) && !empty($includeFile)) {
+            $this->parameters = array($includeFile);
+        } else {
+            $this->parameters = $parameters;
+        }
     }
 }

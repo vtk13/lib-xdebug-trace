@@ -1,6 +1,6 @@
 {
     "name": "vtk13/lib-xdebug-trace",
-    "version": "0.5",
+    "version": "0.6",
     "autoload": {
         "psr-4": {
             "Vtk13\\LibXdebugTrace\\": "src/"
