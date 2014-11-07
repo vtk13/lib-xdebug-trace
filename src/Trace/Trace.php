@@ -47,7 +47,12 @@ class Trace
     {
         $res = array();
         $this->traverse(function(Node $node) use (&$res) {
-            $res[$node->file] = new File($node->file);
+            if (!isset($res[$node->file])) {
+                $res[$node->file] = new File($node->file);
+                $res[$node->file]->hits = 1;
+            } else {
+                $res[$node->file]->hits++;
+            }
         });
 
         ksort($res);
@@ -65,10 +70,12 @@ class Trace
             foreach ($chunks as $i => $chunk) {
                 $leftPath .= '/' . $chunk;
                 if (isset($current->subItems[$chunk])) {
+                    $current->subItems[$chunk]->hits += $file->hits;
                 } elseif ($i == $last) {
                     $current->subItems[$chunk] = $file;
                 } else {
                     $current->subItems[$chunk] = new Directory($leftPath);
+                    $current->subItems[$chunk]->hits = $file->hits;
                 }
                 $current = &$current->subItems[$chunk];
             }

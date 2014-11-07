@@ -43,7 +43,8 @@ class Parser
             $format = fgetcsv($file, null, "\t");
             fgetcsv($file, null, "\t"); // $traceStart
             if ($format[0] != 'File format: ' . XDEBUG_TRACE_COMPUTERIZED) {
-                throw new Exception('Invalid trace format #' . $format[0]);
+//                Version: 2.3.0dev write XDEBUG_TRACE_COMPUTERIZED with "File format: 4" o_0
+//                throw new Exception('Invalid trace format #' . $format[0]);
             }
             while (($data = fgetcsv($file, null, "\t")) !== false) {
                 if (isset($data[2])) {
@@ -53,6 +54,9 @@ class Parser
                             break;
                         case '1':
                             $this->processEntry(new ExitEntry($data[0], $data[1], $data[3], $data[4]));
+                            break;
+                        case 'R':
+                            $this->processEntry(new ReturnEntry($data[0], $data[1], $data[5]));
                             break;
                     }
                 }
@@ -107,7 +111,13 @@ class Parser
 
     public function processEntry(Entry $entry)
     {
-        if ($entry instanceof ExitEntry) {
+        if ($entry instanceof ReturnEntry) {
+            if (isset($this->current->children[$entry->callId])) {
+                $this->current->children[$entry->callId]->returnValue = $entry->value;
+            } else {
+                $this->log->warning('Invalid return entry #' . $entry->callId);
+            }
+        } elseif ($entry instanceof ExitEntry) {
             $this->goOut($entry);
         } else {
             switch (true) {

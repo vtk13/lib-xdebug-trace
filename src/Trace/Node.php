@@ -13,6 +13,8 @@ class Node
     public $line;
     public $parameters = array();
 
+    public $returnValue = null;
+
     /**
      * @var Node
      */
