@@ -5,6 +5,8 @@ class File
 {
     protected $name;
 
+    public $hits = 1;
+
     public function __construct($name)
     {
         $this->name = $name;

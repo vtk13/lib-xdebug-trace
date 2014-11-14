@@ -25,6 +25,8 @@ class Node
      */
     public $children = array();
 
+    public $hits = 1;
+
     public function __construct(
         $level,
         $callId,

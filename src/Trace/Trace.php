@@ -49,7 +49,6 @@ class Trace
         $this->traverse(function(Node $node) use (&$res) {
             if (!isset($res[$node->file])) {
                 $res[$node->file] = new File($node->file);
-                $res[$node->file]->hits = 1;
             } else {
                 $res[$node->file]->hits++;
             }
@@ -99,7 +98,11 @@ class Trace
                     throw new Exception('Given filename is ambiguous. Found ' . $node->file . ' and ' . $fullFileName);
                 }
                 // collect line numbers
-                $res[$node->line] = new Line($fullFileName, $node->line);
+                if (isset($res[$node->line])) {
+                    $res[$node->line]->hits++;
+                } else {
+                    $res[$node->line] = new Line($fullFileName, $node->line);
+                }
             }
         });
 

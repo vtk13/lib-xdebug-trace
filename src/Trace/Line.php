@@ -6,6 +6,8 @@ class Line
     public $file;
     public $line;
 
+    public $hits = 1;
+
     public function __construct($file, $line)
     {
         $this->file = $file;
